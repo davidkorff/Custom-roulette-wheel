@@ -74,13 +74,12 @@ function createWheel() {
         wheel.appendChild(segment);
     }
 
-    // Create gold dividers between segments
-    const dividersContainer = document.getElementById('dividers');
+    // Create gold dividers between segments (inside wheel so they spin)
     for (let i = 0; i < totalNumbers; i++) {
         const divider = document.createElement('div');
         divider.className = 'segment-divider';
         divider.style.transform = `rotate(${i * segmentAngle}deg)`;
-        dividersContainer.appendChild(divider);
+        wheel.appendChild(divider);
     }
 }
 
