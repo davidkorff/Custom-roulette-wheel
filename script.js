@@ -27,36 +27,11 @@ const messages = {
     25: "You take on my kid-responsibilities when I'm too busay 🦸‍♀️"
 };
 
-// Alternating colors for the wheel segments
-const colors = [
-    '#e94560', // Pink/Red
-    '#0f3460', // Dark Blue
-    '#ffd700', // Gold
-    '#16213e', // Navy
-    '#ff6b6b', // Coral
-    '#1a1a2e', // Dark Purple
-    '#00d9ff', // Cyan
-    '#533483', // Purple
-    '#e94560', // Pink/Red
-    '#0f3460', // Dark Blue
-    '#ffd700', // Gold
-    '#16213e', // Navy
-    '#ff6b6b', // Coral
-    '#1a1a2e', // Dark Purple
-    '#00d9ff', // Cyan
-    '#533483', // Purple
-    '#e94560', // Pink/Red
-    '#0f3460', // Dark Blue
-    '#ffd700', // Gold
-    '#16213e', // Navy
-    '#ff6b6b', // Coral
-    '#1a1a2e', // Dark Purple
-    '#00d9ff', // Cyan
-    '#533483', // Purple
-    '#e94560'  // Pink/Red
-];
+// Red numbers (like in real roulette, adapted for 1-25)
+const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25];
 
 const wheel = document.getElementById('wheel');
+const ball = document.getElementById('ball');
 const spinBtn = document.getElementById('spinBtn');
 const resultDiv = document.getElementById('result');
 const resultNumber = document.getElementById('resultNumber');
@@ -67,34 +42,51 @@ const audioContainer = document.getElementById('audioContainer');
 
 let currentRotation = 0;
 let isSpinning = false;
+const totalNumbers = 25;
+const segmentAngle = 360 / totalNumbers;
 
 // Create wheel segments
 function createWheel() {
-    const segmentAngle = 360 / 25;
+    for (let i = 0; i < totalNumbers; i++) {
+        const num = i + 1;
+        const isRed = redNumbers.includes(num);
 
-    for (let i = 0; i < 25; i++) {
         const segment = document.createElement('div');
         segment.className = 'wheel-segment';
-        segment.style.backgroundColor = colors[i];
 
-        // Calculate rotation for each segment
-        // Offset by half segment so numbers align with center of segment
+        // Position each segment
         const rotation = i * segmentAngle - 90;
         segment.style.transform = `rotate(${rotation}deg) skewY(${90 - segmentAngle}deg)`;
 
-        // Add number label
-        const number = document.createElement('span');
-        number.textContent = i + 1;
-        number.style.transform = `skewY(${-(90 - segmentAngle)}deg) rotate(${segmentAngle / 2}deg)`;
-        segment.appendChild(number);
+        // Color background
+        const colorDiv = document.createElement('div');
+        colorDiv.className = 'segment-color';
+        colorDiv.style.backgroundColor = isRed ? '#c41e3a' : '#1a1a1a';
+        segment.appendChild(colorDiv);
+
+        // Number label
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'segment-number';
+        numberSpan.textContent = num;
+        numberSpan.style.transform = `skewY(${-(90 - segmentAngle)}deg) rotate(${segmentAngle / 2}deg)`;
+        segment.appendChild(numberSpan);
 
         wheel.appendChild(segment);
+    }
+
+    // Create gold dividers between segments
+    const dividersContainer = document.getElementById('dividers');
+    for (let i = 0; i < totalNumbers; i++) {
+        const divider = document.createElement('div');
+        divider.className = 'segment-divider';
+        divider.style.transform = `rotate(${i * segmentAngle}deg)`;
+        dividersContainer.appendChild(divider);
     }
 }
 
 // Create audio elements
 function createAudioElements() {
-    for (let i = 1; i <= 25; i++) {
+    for (let i = 1; i <= totalNumbers; i++) {
         const audio = document.createElement('audio');
         audio.id = `audio-${i}`;
         audio.src = `audio/${i}.mp3`;
@@ -109,15 +101,64 @@ function playAudio(number) {
     if (audio) {
         audio.currentTime = 0;
         audio.play().catch(e => {
-            // Audio might not be available yet - that's okay
             console.log('Audio not yet available for number:', number);
         });
     }
 }
 
+// Animate the ball
+function animateBall(winningNumber, duration) {
+    const wheelContainer = document.querySelector('.wheel-container');
+    const containerRect = wheelContainer.getBoundingClientRect();
+    const centerX = containerRect.width / 2;
+    const centerY = containerRect.height / 2;
+
+    ball.classList.add('visible');
+
+    // Ball starts on the outer edge and spirals inward
+    let startTime = null;
+    const outerRadius = 155;
+    const innerRadius = 120;
+    const totalSpins = 8;
+
+    // Calculate final angle for the winning number
+    const finalAngle = ((winningNumber - 1) * segmentAngle + segmentAngle / 2) * (Math.PI / 180);
+
+    function animate(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function for natural deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+
+        // Current angle (ball spins opposite to wheel)
+        const currentSpins = totalSpins * (1 - easeOut);
+        const angle = currentSpins * Math.PI * 2 + finalAngle;
+
+        // Spiral inward as it slows
+        const currentRadius = outerRadius - (outerRadius - innerRadius) * easeOut;
+
+        // Add some wobble near the end
+        const wobble = progress > 0.7 ? Math.sin(progress * 50) * (1 - progress) * 5 : 0;
+
+        const x = centerX + Math.sin(angle) * (currentRadius + wobble) - 8;
+        const y = centerY - Math.cos(angle) * (currentRadius + wobble) - 8;
+
+        ball.style.left = `${x}px`;
+        ball.style.top = `${y}px`;
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
 // Create confetti effect
 function createConfetti() {
-    const confettiColors = ['#ffd700', '#e94560', '#ff6b6b', '#00d9ff', '#533483', '#fff'];
+    const confettiColors = ['#ffd700', '#c41e3a', '#ffffff', '#c9a227', '#8B5A2B'];
 
     for (let i = 0; i < 50; i++) {
         setTimeout(() => {
@@ -143,38 +184,38 @@ function spin() {
 
     isSpinning = true;
     spinBtn.disabled = true;
+    ball.classList.remove('visible');
 
     // Random number between 1-25
-    const winningNumber = Math.floor(Math.random() * 25) + 1;
+    const winningNumber = Math.floor(Math.random() * totalNumbers) + 1;
 
     // Calculate the rotation needed
-    // Each segment is 360/25 = 14.4 degrees
-    const segmentAngle = 360 / 25;
-
-    // We want the pointer (at top) to land on the winning number
-    // Numbers are placed starting from the right (3 o'clock position)
-    // Pointer is at top (12 o'clock), so we need to offset
     const targetAngle = (winningNumber - 1) * segmentAngle + (segmentAngle / 2);
 
     // Spin multiple full rotations plus the target angle
-    // The pointer is at top, so we need to calculate from there
-    const fullRotations = 5 + Math.floor(Math.random() * 3); // 5-7 full spins
+    const fullRotations = 5 + Math.floor(Math.random() * 3);
     const totalRotation = fullRotations * 360 + (360 - targetAngle) + 90;
 
     currentRotation += totalRotation;
     wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+    // Animate the ball
+    const spinDuration = 5000;
+    animateBall(winningNumber, spinDuration);
 
     // Show result after spin completes
     setTimeout(() => {
         showResult(winningNumber);
         isSpinning = false;
         spinBtn.disabled = false;
-    }, 5100); // Slightly longer than the CSS transition (5s)
+    }, spinDuration + 200);
 }
 
 // Show the result popup
 function showResult(number) {
-    resultNumber.textContent = `#${number}`;
+    const isRed = redNumbers.includes(number);
+    resultNumber.textContent = number;
+    resultNumber.className = 'result-number ' + (isRed ? 'red' : 'black');
     resultMessage.textContent = messages[number];
     overlay.classList.remove('hidden');
     resultDiv.classList.remove('hidden');
@@ -190,9 +231,10 @@ function showResult(number) {
 function hideResult() {
     overlay.classList.add('hidden');
     resultDiv.classList.add('hidden');
+    ball.classList.remove('visible');
 
     // Stop any playing audio
-    for (let i = 1; i <= 25; i++) {
+    for (let i = 1; i <= totalNumbers; i++) {
         const audio = document.getElementById(`audio-${i}`);
         if (audio) {
             audio.pause();
