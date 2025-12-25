@@ -45,36 +45,40 @@ let isSpinning = false;
 const totalNumbers = 25;
 const segmentAngle = 360 / totalNumbers;
 
-// Create wheel segments
+// Create wheel with conic gradient background
 function createWheel() {
+    // Build conic gradient for segment colors
+    let gradientStops = [];
     for (let i = 0; i < totalNumbers; i++) {
         const num = i + 1;
         const isRed = redNumbers.includes(num);
+        const color = isRed ? '#c41e3a' : '#1a1a1a';
+        const startAngle = i * segmentAngle;
+        const endAngle = (i + 1) * segmentAngle;
+        gradientStops.push(`${color} ${startAngle}deg ${endAngle}deg`);
+    }
 
-        const segment = document.createElement('div');
-        segment.className = 'wheel-segment';
+    wheel.style.background = `conic-gradient(from -${segmentAngle/2}deg, ${gradientStops.join(', ')})`;
 
-        // Position each segment
-        const rotation = i * segmentAngle - 90;
-        segment.style.transform = `rotate(${rotation}deg) skewY(${90 - segmentAngle}deg)`;
+    // Add number labels
+    const labelContainer = document.createElement('div');
+    labelContainer.className = 'number-label';
 
-        // Color background
-        const colorDiv = document.createElement('div');
-        colorDiv.className = 'segment-color';
-        colorDiv.style.backgroundColor = isRed ? '#c41e3a' : '#1a1a1a';
-        segment.appendChild(colorDiv);
+    for (let i = 0; i < totalNumbers; i++) {
+        const num = i + 1;
+        const angle = i * segmentAngle;
 
-        // Number label
         const numberSpan = document.createElement('span');
         numberSpan.className = 'segment-number';
         numberSpan.textContent = num;
-        numberSpan.style.transform = `skewY(${-(90 - segmentAngle)}deg) rotate(${segmentAngle / 2}deg)`;
-        segment.appendChild(numberSpan);
-
-        wheel.appendChild(segment);
+        numberSpan.style.transformOrigin = '50% 167px';
+        numberSpan.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+        labelContainer.appendChild(numberSpan);
     }
 
-    // Create gold dividers between segments (inside wheel so they spin)
+    wheel.appendChild(labelContainer);
+
+    // Create gold dividers between segments
     for (let i = 0; i < totalNumbers; i++) {
         const divider = document.createElement('div');
         divider.className = 'segment-divider';
@@ -114,13 +118,11 @@ function animateBall(winningNumber, duration) {
 
     ball.classList.add('visible');
 
-    // Ball starts on the outer edge and spirals inward
     let startTime = null;
     const outerRadius = 155;
     const innerRadius = 120;
     const totalSpins = 8;
 
-    // Calculate final angle for the winning number
     const finalAngle = ((winningNumber - 1) * segmentAngle + segmentAngle / 2) * (Math.PI / 180);
 
     function animate(timestamp) {
@@ -128,17 +130,10 @@ function animateBall(winningNumber, duration) {
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / duration, 1);
 
-        // Easing function for natural deceleration
         const easeOut = 1 - Math.pow(1 - progress, 3);
-
-        // Current angle (ball spins opposite to wheel)
         const currentSpins = totalSpins * (1 - easeOut);
         const angle = currentSpins * Math.PI * 2 + finalAngle;
-
-        // Spiral inward as it slows
         const currentRadius = outerRadius - (outerRadius - innerRadius) * easeOut;
-
-        // Add some wobble near the end
         const wobble = progress > 0.7 ? Math.sin(progress * 50) * (1 - progress) * 5 : 0;
 
         const x = centerX + Math.sin(angle) * (currentRadius + wobble) - 8;
@@ -185,24 +180,17 @@ function spin() {
     spinBtn.disabled = true;
     ball.classList.remove('visible');
 
-    // Random number between 1-25
     const winningNumber = Math.floor(Math.random() * totalNumbers) + 1;
-
-    // Calculate the rotation needed
     const targetAngle = (winningNumber - 1) * segmentAngle + (segmentAngle / 2);
-
-    // Spin multiple full rotations plus the target angle
     const fullRotations = 5 + Math.floor(Math.random() * 3);
     const totalRotation = fullRotations * 360 + (360 - targetAngle) + 90;
 
     currentRotation += totalRotation;
     wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-    // Animate the ball
     const spinDuration = 5000;
     animateBall(winningNumber, spinDuration);
 
-    // Show result after spin completes
     setTimeout(() => {
         showResult(winningNumber);
         isSpinning = false;
@@ -219,10 +207,7 @@ function showResult(number) {
     overlay.classList.remove('hidden');
     resultDiv.classList.remove('hidden');
 
-    // Play audio
     playAudio(number);
-
-    // Create confetti
     createConfetti();
 }
 
@@ -232,7 +217,6 @@ function hideResult() {
     resultDiv.classList.add('hidden');
     ball.classList.remove('visible');
 
-    // Stop any playing audio
     for (let i = 1; i <= totalNumbers; i++) {
         const audio = document.getElementById(`audio-${i}`);
         if (audio) {
