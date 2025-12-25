@@ -48,7 +48,7 @@ const segmentAngle = 360 / totalNumbers;
 // Create wheel with conic gradient background
 function createWheel() {
     // Build conic gradient for segment colors
-    // Each segment spans segmentAngle degrees, dividers sit at boundaries
+    // Gradient starts at -90deg (right/3 o'clock) to match divider rotation
     let gradientStops = [];
     for (let i = 0; i < totalNumbers; i++) {
         const num = i + 1;
@@ -59,8 +59,8 @@ function createWheel() {
         gradientStops.push(`${color} ${startAngle}deg ${endAngle}deg`);
     }
 
-    // Start gradient at 0deg so colors align with dividers
-    wheel.style.background = `conic-gradient(from 0deg, ${gradientStops.join(', ')})`;
+    // Start at -90deg so segment 0 starts at 3 o'clock (right), matching dividers
+    wheel.style.background = `conic-gradient(from -90deg, ${gradientStops.join(', ')})`;
 
     // Add number labels - positioned at CENTER of each segment
     const labelContainer = document.createElement('div');
@@ -68,7 +68,7 @@ function createWheel() {
 
     for (let i = 0; i < totalNumbers; i++) {
         const num = i + 1;
-        // Center the number in the segment (offset by half segment)
+        // Center the number in the segment
         const angle = i * segmentAngle + segmentAngle / 2;
 
         const numberSpan = document.createElement('span');
@@ -111,8 +111,8 @@ function playAudio(number) {
     }
 }
 
-// Animate the ball
-function animateBall(winningNumber, duration) {
+// Animate the ball - lands at top (12 o'clock)
+function animateBall(duration) {
     const wheelContainer = document.querySelector('.wheel-container');
     const containerRect = wheelContainer.getBoundingClientRect();
     const centerX = containerRect.width / 2;
@@ -122,10 +122,11 @@ function animateBall(winningNumber, duration) {
 
     let startTime = null;
     const outerRadius = 155;
-    const innerRadius = 120;
+    const innerRadius = 125;
     const totalSpins = 8;
 
-    const finalAngle = ((winningNumber - 1) * segmentAngle + segmentAngle / 2) * (Math.PI / 180);
+    // Ball lands at top (0 degrees = 12 o'clock)
+    const finalAngle = 0;
 
     function animate(timestamp) {
         if (!startTime) startTime = timestamp;
@@ -134,10 +135,11 @@ function animateBall(winningNumber, duration) {
 
         const easeOut = 1 - Math.pow(1 - progress, 3);
         const currentSpins = totalSpins * (1 - easeOut);
-        const angle = currentSpins * Math.PI * 2 + finalAngle;
+        const angle = -currentSpins * Math.PI * 2 + finalAngle; // Negative for counter-clockwise ball
         const currentRadius = outerRadius - (outerRadius - innerRadius) * easeOut;
-        const wobble = progress > 0.7 ? Math.sin(progress * 50) * (1 - progress) * 5 : 0;
+        const wobble = progress > 0.8 ? Math.sin(progress * 60) * (1 - progress) * 4 : 0;
 
+        // Ball position: 0 deg = top
         const x = centerX + Math.sin(angle) * (currentRadius + wobble) - 8;
         const y = centerY - Math.cos(angle) * (currentRadius + wobble) - 8;
 
@@ -183,15 +185,34 @@ function spin() {
     ball.classList.remove('visible');
 
     const winningNumber = Math.floor(Math.random() * totalNumbers) + 1;
-    const targetAngle = (winningNumber - 1) * segmentAngle + (segmentAngle / 2);
-    const fullRotations = 5 + Math.floor(Math.random() * 3);
-    const totalRotation = fullRotations * 360 + (360 - targetAngle) + 90;
+    const i = winningNumber - 1;
+
+    // Segment i center is at (i * segmentAngle + segmentAngle/2) degrees from 3 o'clock
+    // We want to rotate the wheel so this segment ends up at 12 o'clock (top)
+    // Top is at -90deg from 3 o'clock (or 270deg)
+    // So we need segment center to be at 270deg after rotation
+
+    const segmentCenter = i * segmentAngle + segmentAngle / 2;
+
+    // Current wheel position
+    const currentPos = ((currentRotation % 360) + 360) % 360;
+
+    // Current position of segment center (in absolute terms, 0 = 3 o'clock)
+    const currentSegmentPos = (segmentCenter + currentPos) % 360;
+
+    // We want segment at 270deg (top). How much to rotate?
+    // (currentSegmentPos + rotation) mod 360 = 270
+    let neededRotation = (270 - currentSegmentPos + 360) % 360;
+    if (neededRotation < 30) neededRotation += 360; // Ensure visible spin
+
+    const fullSpins = 5 + Math.floor(Math.random() * 3);
+    const totalRotation = fullSpins * 360 + neededRotation;
 
     currentRotation += totalRotation;
     wheel.style.transform = `rotate(${currentRotation}deg)`;
 
     const spinDuration = 5000;
-    animateBall(winningNumber, spinDuration);
+    animateBall(spinDuration);
 
     setTimeout(() => {
         showResult(winningNumber);
