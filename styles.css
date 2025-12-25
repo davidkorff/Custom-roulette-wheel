@@ -21,6 +21,51 @@ body {
     width: 100%;
 }
 
+.birthday-header {
+    margin-bottom: 15px;
+    padding: 20px;
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(201, 162, 39, 0.05));
+    border-radius: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.birthday-header h1 {
+    font-family: 'Playfair Display', serif;
+    color: #ff6b9d;
+    font-size: 2.2rem;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 157, 0.3);
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+.birthday-header h2 {
+    font-family: 'Playfair Display', serif;
+    color: #ffd700;
+    font-size: 1.6rem;
+    font-weight: 400;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.hearts {
+    font-size: 1.5rem;
+    margin: 8px 0;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 157, 0.3);
+    }
+    50% {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 107, 157, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
 h1 {
     font-family: 'Playfair Display', serif;
     color: #ffd700;
@@ -30,10 +75,11 @@ h1 {
 }
 
 .subtitle {
-    color: #c9a227;
-    font-size: 1.1rem;
-    margin-bottom: 30px;
+    color: #ffb6c1;
+    font-size: 1.2rem;
+    margin-bottom: 25px;
     font-style: italic;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Roulette Table Felt */
@@ -208,8 +254,8 @@ h1 {
 }
 
 .spin-button {
-    background: linear-gradient(145deg, #c9a227, #8b6914);
-    color: #1a1a1a;
+    background: linear-gradient(145deg, #ff6b9d, #ff4081);
+    color: #ffffff;
     border: none;
     padding: 18px 50px;
     font-size: 1.3rem;
@@ -218,7 +264,7 @@ h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.4),
+        0 8px 25px rgba(255, 107, 157, 0.4),
         inset 0 2px 3px rgba(255, 255, 255, 0.3);
     font-family: 'Poppins', sans-serif;
     text-transform: uppercase;
@@ -228,9 +274,9 @@ h1 {
 .spin-button:hover:not(:disabled) {
     transform: translateY(-3px);
     box-shadow:
-        0 12px 35px rgba(0, 0, 0, 0.5),
+        0 12px 35px rgba(255, 107, 157, 0.5),
         inset 0 2px 3px rgba(255, 255, 255, 0.3);
-    background: linear-gradient(145deg, #ffd700, #c9a227);
+    background: linear-gradient(145deg, #ff85ad, #ff6b9d);
 }
 
 .spin-button:active:not(:disabled) {
@@ -307,8 +353,8 @@ h1 {
 }
 
 .close-button {
-    background: linear-gradient(145deg, #c9a227, #8b6914);
-    color: #1a1a1a;
+    background: linear-gradient(145deg, #ff6b9d, #ff4081);
+    color: #ffffff;
     border: none;
     padding: 15px 35px;
     font-size: 1.1rem;
@@ -321,7 +367,7 @@ h1 {
 
 .close-button:hover {
     transform: scale(1.05);
-    background: linear-gradient(145deg, #ffd700, #c9a227);
+    background: linear-gradient(145deg, #ff85ad, #ff6b9d);
 }
 
 .hidden {

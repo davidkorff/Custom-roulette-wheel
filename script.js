@@ -156,7 +156,7 @@ function animateBall(duration) {
 
 // Create confetti effect
 function createConfetti() {
-    const confettiColors = ['#ffd700', '#c41e3a', '#ffffff', '#c9a227', '#8B5A2B'];
+    const confettiColors = ['#ff6b9d', '#ffd700', '#ff4081', '#ffffff', '#ffb6c1', '#ff85ad', '#c9a227'];
 
     for (let i = 0; i < 50; i++) {
         setTimeout(() => {
