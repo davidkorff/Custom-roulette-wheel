@@ -176,6 +176,13 @@ function createConfetti() {
     }
 }
 
+// Cryptographically secure random number 1-25
+function getRandomNumber() {
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    return (array[0] % totalNumbers) + 1;
+}
+
 // Spin the wheel
 function spin() {
     if (isSpinning) return;
@@ -184,7 +191,7 @@ function spin() {
     spinBtn.disabled = true;
     ball.classList.remove('visible');
 
-    const winningNumber = Math.floor(Math.random() * totalNumbers) + 1;
+    const winningNumber = getRandomNumber();
     const i = winningNumber - 1;
 
     // Gradient starts at 90deg (3 o'clock). Segment i center on screen:
