@@ -48,6 +48,7 @@ const segmentAngle = 360 / totalNumbers;
 // Create wheel with conic gradient background
 function createWheel() {
     // Build conic gradient for segment colors
+    // Each segment spans segmentAngle degrees, dividers sit at boundaries
     let gradientStops = [];
     for (let i = 0; i < totalNumbers; i++) {
         const num = i + 1;
@@ -58,27 +59,28 @@ function createWheel() {
         gradientStops.push(`${color} ${startAngle}deg ${endAngle}deg`);
     }
 
-    wheel.style.background = `conic-gradient(from -${segmentAngle/2}deg, ${gradientStops.join(', ')})`;
+    // Start gradient at 0deg so colors align with dividers
+    wheel.style.background = `conic-gradient(from 0deg, ${gradientStops.join(', ')})`;
 
-    // Add number labels
+    // Add number labels - positioned at CENTER of each segment
     const labelContainer = document.createElement('div');
     labelContainer.className = 'number-label';
 
     for (let i = 0; i < totalNumbers; i++) {
         const num = i + 1;
-        const angle = i * segmentAngle;
+        // Center the number in the segment (offset by half segment)
+        const angle = i * segmentAngle + segmentAngle / 2;
 
         const numberSpan = document.createElement('span');
         numberSpan.className = 'segment-number';
         numberSpan.textContent = num;
-        numberSpan.style.transformOrigin = '50% 167px';
-        numberSpan.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+        numberSpan.style.transform = `rotate(${angle}deg)`;
         labelContainer.appendChild(numberSpan);
     }
 
     wheel.appendChild(labelContainer);
 
-    // Create gold dividers between segments
+    // Create gold dividers at segment boundaries
     for (let i = 0; i < totalNumbers; i++) {
         const divider = document.createElement('div');
         divider.className = 'segment-divider';
