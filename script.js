@@ -48,7 +48,6 @@ const segmentAngle = 360 / totalNumbers;
 // Create wheel with conic gradient background
 function createWheel() {
     // Build conic gradient for segment colors
-    // Gradient starts at -90deg (right/3 o'clock) to match divider rotation
     let gradientStops = [];
     for (let i = 0; i < totalNumbers; i++) {
         const num = i + 1;
@@ -59,8 +58,8 @@ function createWheel() {
         gradientStops.push(`${color} ${startAngle}deg ${endAngle}deg`);
     }
 
-    // Start at -90deg so segment 0 starts at 3 o'clock (right), matching dividers
-    wheel.style.background = `conic-gradient(from -90deg, ${gradientStops.join(', ')})`;
+    // from 90deg = start at 3 o'clock (right), matching divider rotate(0deg)
+    wheel.style.background = `conic-gradient(from 90deg, ${gradientStops.join(', ')})`;
 
     // Add number labels - positioned at CENTER of each segment
     const labelContainer = document.createElement('div');
@@ -187,22 +186,18 @@ function spin() {
     const winningNumber = Math.floor(Math.random() * totalNumbers) + 1;
     const i = winningNumber - 1;
 
-    // Segment i center is at (i * segmentAngle + segmentAngle/2) degrees from 3 o'clock
-    // We want to rotate the wheel so this segment ends up at 12 o'clock (top)
-    // Top is at -90deg from 3 o'clock (or 270deg)
-    // So we need segment center to be at 270deg after rotation
+    // Gradient starts at 90deg (3 o'clock). Segment i center in screen coords:
+    // screenPos = 90 + i*segmentAngle + segmentAngle/2
+    // Ball lands at top (0deg). We rotate wheel to bring segment there.
 
-    const segmentCenter = i * segmentAngle + segmentAngle / 2;
+    const segmentScreenPos = 90 + i * segmentAngle + segmentAngle / 2;
 
-    // Current wheel position
+    // Current wheel rotation affects where segment appears
     const currentPos = ((currentRotation % 360) + 360) % 360;
+    const currentSegmentScreen = (segmentScreenPos + currentPos) % 360;
 
-    // Current position of segment center (in absolute terms, 0 = 3 o'clock)
-    const currentSegmentPos = (segmentCenter + currentPos) % 360;
-
-    // We want segment at 270deg (top). How much to rotate?
-    // (currentSegmentPos + rotation) mod 360 = 270
-    let neededRotation = (270 - currentSegmentPos + 360) % 360;
+    // Rotation needed to bring segment to 0deg (top)
+    let neededRotation = (360 - currentSegmentScreen) % 360;
     if (neededRotation < 30) neededRotation += 360; // Ensure visible spin
 
     const fullSpins = 5 + Math.floor(Math.random() * 3);
