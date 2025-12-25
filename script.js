@@ -58,8 +58,8 @@ function createWheel() {
         gradientStops.push(`${color} ${startAngle}deg ${endAngle}deg`);
     }
 
-    // from 97.2deg to offset by half segment for divider alignment
-    wheel.style.background = `conic-gradient(from 97.2deg, ${gradientStops.join(', ')})`;
+    // from 90deg = gradient starts at 3 o'clock, matching divider rotate(0deg)
+    wheel.style.background = `conic-gradient(from 90deg, ${gradientStops.join(', ')})`;
 
     // Add number labels - positioned at CENTER of each segment
     const labelContainer = document.createElement('div');
@@ -67,8 +67,9 @@ function createWheel() {
 
     for (let i = 0; i < totalNumbers; i++) {
         const num = i + 1;
-        // Center the number in the segment
-        const angle = i * segmentAngle + segmentAngle / 2;
+        // Segment i center is at 90 + i*segmentAngle + segmentAngle/2 on screen
+        // Numbers rotate from top (0deg), so add 90 to match segment positions
+        const angle = 90 + i * segmentAngle + segmentAngle / 2;
 
         const numberSpan = document.createElement('span');
         numberSpan.className = 'segment-number';
@@ -186,11 +187,11 @@ function spin() {
     const winningNumber = Math.floor(Math.random() * totalNumbers) + 1;
     const i = winningNumber - 1;
 
-    // Gradient starts at 97.2deg (3 o'clock + half segment)
-    // Segment i center is at: 97.2 + i*segmentAngle (already centered due to gradient offset)
-    // Ball lands at top (0deg). We rotate wheel to bring segment there.
+    // Gradient starts at 90deg (3 o'clock). Segment i center on screen:
+    // screenPos = 90 + i*segmentAngle + segmentAngle/2 = 97.2 + i*segmentAngle
+    // Ball lands at top (0deg). Rotate wheel to bring segment center there.
 
-    const segmentScreenPos = 97.2 + i * segmentAngle;
+    const segmentScreenPos = 90 + i * segmentAngle + segmentAngle / 2;
 
     // Current wheel rotation affects where segment appears
     const currentPos = ((currentRotation % 360) + 360) % 360;
